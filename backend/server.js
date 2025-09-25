@@ -341,14 +341,174 @@ app.get("/api/products/:id", async (req, res) => {
 });
 
 // Categories route
-app.get("/api/categories", (req, res) => {
-  const categories = [
-    { id: "electronics", name: "Electronics" },
-    { id: "sports", name: "Sports" },
-    { id: "home", name: "Home & Garden" },
-    { id: "fashion", name: "Fashion" },
-  ];
-  res.json(categories);
+app.get("/api/categories", async (req, res) => {
+  try {
+    // Try to get categories from Firestore first
+    if (db) {
+      try {
+        // First, try to get from dedicated categories collection
+        const categoriesSnapshot = await db.collection("categorias").where("activa", "==", true).get();
+        
+        if (!categoriesSnapshot.empty) {
+          const categoryData = [];
+          categoriesSnapshot.forEach((doc) => {
+            const category = doc.data();
+            categoryData.push({
+              id: category.id,
+              name: category.nombre || formatCategoryName(category.id),
+              description: category.descripcion,
+              icon: category.icono,
+            });
+          });
+          
+          console.log(`📂 Retrieved ${categoryData.length} categories from categorias collection`);
+          return res.json(categoryData);
+        }
+
+        // If no categories collection, extract from products
+        const productsSnapshot = await db.collection("catalogo").get();
+        const categoriesSet = new Set();
+        const categoryData = [];
+
+        productsSnapshot.forEach((doc) => {
+          const product = doc.data();
+          if (product.categoria) {
+            categoriesSet.add(product.categoria);
+          }
+        });
+
+        // Convert unique categories to the expected format
+        categoriesSet.forEach(category => {
+          categoryData.push({
+            id: category,
+            name: formatCategoryName(category),
+            description: `Productos de ${formatCategoryName(category).toLowerCase()}`,
+          });
+        });
+
+        console.log(`📦 Retrieved ${categoryData.length} categories from products collection`);
+        return res.json(categoryData);
+      } catch (firestoreError) {
+        console.warn(
+          "Firestore query failed for categories, falling back to mock data:",
+          firestoreError.message
+        );
+      }
+    }
+
+    // Fallback to mock data
+    console.log("📦 Using mock categories data");
+    const categories = [
+      { id: "electronics", name: "Electrónicos", description: "Dispositivos electrónicos y tecnología" },
+      { id: "sports", name: "Deportes", description: "Artículos deportivos y fitness" },
+      { id: "home", name: "Hogar y Jardín", description: "Artículos para el hogar y jardín" },
+      { id: "fashion", name: "Moda", description: "Ropa y accesorios de moda" },
+    ];
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Helper function to format category names
+function formatCategoryName(category) {
+  const categoryMap = {
+    'electronics': 'Electrónicos',
+    'sports': 'Deportes',
+    'home': 'Hogar y Jardín',
+    'fashion': 'Moda',
+    'clothing': 'Ropa',
+    'books': 'Libros',
+    'toys': 'Juguetes',
+    'beauty': 'Belleza',
+    'automotive': 'Automotriz',
+    'music': 'Música',
+    'gaming': 'Videojuegos',
+    'health': 'Salud y Bienestar'
+  };
+
+  // Return mapped name or capitalize the category name
+  return categoryMap[category.toLowerCase()] || 
+         category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+}
+
+// CRUD routes for categories management (admin functionality)
+// Create new category
+app.post("/api/categories", async (req, res) => {
+  try {
+    const { id, nombre, descripcion, icono } = req.body;
+    
+    if (!id || !nombre) {
+      return res.status(400).json({ error: "ID and nombre are required" });
+    }
+
+    if (db) {
+      const categoryRef = db.collection("categorias").doc(id);
+      await categoryRef.set({
+        id,
+        nombre,
+        descripcion: descripcion || `Productos de ${nombre.toLowerCase()}`,
+        icono: icono || "📦",
+        activa: true,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      res.json({ message: "Category created successfully", id });
+    } else {
+      res.status(503).json({ error: "Database not available" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update category
+app.put("/api/categories/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, descripcion, icono, activa } = req.body;
+
+    if (db) {
+      const categoryRef = db.collection("categorias").doc(id);
+      const updateData = {
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      if (nombre) updateData.nombre = nombre;
+      if (descripcion !== undefined) updateData.descripcion = descripcion;
+      if (icono !== undefined) updateData.icono = icono;
+      if (activa !== undefined) updateData.activa = activa;
+
+      await categoryRef.update(updateData);
+      res.json({ message: "Category updated successfully", id });
+    } else {
+      res.status(503).json({ error: "Database not available" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete category (soft delete - mark as inactive)
+app.delete("/api/categories/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (db) {
+      const categoryRef = db.collection("categorias").doc(id);
+      await categoryRef.update({
+        activa: false,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      res.json({ message: "Category deactivated successfully", id });
+    } else {
+      res.status(503).json({ error: "Database not available" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Discount coupons/bonuses endpoint
@@ -604,6 +764,32 @@ async function initializeFirestoreData() {
         stock: 12,
         rating: 4.5,
       },
+      {
+        nombre: "Fitness Tracker",
+        precio: 149.99,
+        descuento: 15,
+        categoria: "sports",
+        descripcion: "Advanced fitness tracker with heart rate monitor",
+        img: "https://via.placeholder.com/300x300?text=Fitness+Tracker",
+        destacado: false,
+        popular: true,
+        enDescuento: true,
+        stock: 30,
+        rating: 4.4,
+      },
+      {
+        nombre: "Wireless Keyboard",
+        precio: 59.99,
+        descuento: 0,
+        categoria: "electronics",
+        descripcion: "Ergonomic wireless keyboard with backlight",
+        img: "https://via.placeholder.com/300x300?text=Keyboard",
+        destacado: false,
+        popular: false,
+        enDescuento: false,
+        stock: 18,
+        rating: 4.2,
+      },
     ];
 
     // Add products to Firestore catalogo collection
@@ -621,8 +807,69 @@ async function initializeFirestoreData() {
     console.log(
       "✅ Sample products added to catalogo collection successfully!"
     );
+
+    // Initialize categories collection (optional - for better organization)
+    await initializeCategoriesCollection();
   } catch (error) {
     console.error("❌ Error initializing Firestore data:", error);
+  }
+}
+
+// Initialize categories collection with predefined categories
+async function initializeCategoriesCollection() {
+  try {
+    const categoriesSnapshot = await db.collection("categorias").limit(1).get();
+    
+    if (!categoriesSnapshot.empty) {
+      console.log("📂 Categories collection already exists");
+      return;
+    }
+
+    const defaultCategories = [
+      {
+        id: "electronics",
+        nombre: "Electrónicos",
+        descripcion: "Dispositivos electrónicos y tecnología",
+        icono: "📱",
+        activa: true,
+      },
+      {
+        id: "sports",
+        nombre: "Deportes",
+        descripcion: "Artículos deportivos y fitness",
+        icono: "⚽",
+        activa: true,
+      },
+      {
+        id: "home",
+        nombre: "Hogar y Jardín",
+        descripcion: "Artículos para el hogar y jardín",
+        icono: "🏠",
+        activa: true,
+      },
+      {
+        id: "fashion",
+        nombre: "Moda",
+        descripcion: "Ropa y accesorios de moda",
+        icono: "👕",
+        activa: true,
+      },
+    ];
+
+    const categoriesBatch = db.batch();
+    defaultCategories.forEach((category) => {
+      const categoryRef = db.collection("categorias").doc(category.id);
+      categoriesBatch.set(categoryRef, {
+        ...category,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+
+    await categoriesBatch.commit();
+    console.log("✅ Categories collection initialized successfully!");
+  } catch (error) {
+    console.error("❌ Error initializing categories:", error);
   }
 }
 

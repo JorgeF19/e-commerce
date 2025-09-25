@@ -1,0 +1,16 @@
+{
+  "links": [
+    "https://arminse.es/8638-large_default/escopeta-mossberg-590a1-nfaclass-3-6t-.jpg",
+    "https://cdn11.bigcommerce.com/s-0xmhwue6/images/stencil/1280x1280/products/31672/75720/Beretta-1301-Tactical-Mod-2-12-Gauge-18-5-Barrel-3-Chamber-Gray-082442979021_image1__91364.1715610269.jpg?c=2",
+    "https://cdn11.bigcommerce.com/s-50c7cl/images/stencil/590x590/products/3441/21187/CTCR6960_2_HR__88416.1633713292.jpg?c=2",
+    "https://cdn11.bigcommerce.com/s-7c2jlxhfym/images/stencil/1280x1280/products/13112/32372/p_SW-10206__35773.1522189716.jpg?c=2",
+    "https://cdn11.bigcommerce.com/s-cmh6pcyhu/images/stencil/original/products/41421/103891/1-min__81122.1717011285.png",
+    "https://cdn11.bigcommerce.com/s-cmh6pcyhu/images/stencil/original/products/54313/74190/iwi_galil_ace_genii_rifle__94141.1692454844.png",
+    "https://img2.activant-inet.com/custom/058686/Image/g13812.jpg",
+    "https://shop.misterguns.com/images/product/icon/ae00-8341.png",
+    "https://www.gunsholstersandgear.com//wp-content/uploads/2016/01/SW22-Kryptek-Camo.jpg",
+    "https://www.indumil.gov.co/wp-content/uploads/2024/02/37185-DEFAULT-l.jpg",
+    "https://www.smith-wesson.com/_next/image?url=https%3A%2F%2Fcdn11.bigcommerce.com%2Fs-c7gr8wg3cg%2Fproducts%2F302%2Fimages%2F1458%2F12723-mp-OnWhite-Right__28231.1675177619.1280.1280.png%3Fc%3D1&w=1080&q=75",
+    "https://www.smith-wesson.com/_next/image?url=https%3A%2F%2Fcdn11.bigcommerce.com%2Fs-c7gr8wg3cg%2Fproducts%2F976%2Fimages%2F3909%2F14004-OnWhite-Left__80141.1692892719.1280.1280.png%3Fc%3D1&w=1080&q=75"
+  ]
+}

@@ -68,19 +68,23 @@ npm install
 **⚠️ IMPORTANTE**: Cada desarrollador necesita configurar su propia instancia de Firebase.
 
 #### Para colaboradores del proyecto:
+
 1. Solicita acceso al proyecto `e-commerce-c54a2` al dueño del repositorio
 2. Obtén el archivo `serviceAccountKey.json` (NO está en el repositorio por seguridad)
 3. Colócalo en `backend/serviceAccountKey.json`
 
 #### Para desarrollo independiente:
+
 1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com/)
 2. Habilita Firestore Database
 3. Genera una clave de servicio:
+
    - Ve a Configuración del proyecto > Cuentas de servicio
    - Haz clic en "Generar nueva clave privada"
    - Guarda el archivo JSON como `backend/serviceAccountKey.json`
 
 4. Crea/actualiza el archivo `backend/.env`:
+
 ```env
 PORT=5000
 FIREBASE_SERVICE_ACCOUNT_KEY=./serviceAccountKey.json
@@ -88,8 +92,10 @@ FIREBASE_PROJECT_ID=tu-project-id
 ```
 
 📋 **Ver [SETUP_DEVELOPERS.md](SETUP_DEVELOPERS.md) para instrucciones detalladas**
+
 # FIREBASE_PRIVATE_KEY=tu-private-key
-```
+
+````
 
 ## 🚀 Uso
 
@@ -99,7 +105,7 @@ FIREBASE_PROJECT_ID=tu-project-id
 cd backend
 npm start
 # El servidor se ejecutará en http://localhost:5000
-```
+````
 
 ### Iniciar el Frontend
 

@@ -1,4 +1,5 @@
 import React from "react";
+
 import { Navbar, Nav, Container, Badge } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import { useAuth } from "../contexts/AuthContextSafe";
@@ -7,6 +8,7 @@ import { useCart } from "../contexts/CartContext";
 function Navigation() {
   const { currentUser, logout } = useAuth();
   const { getCartItemsCount } = useCart();
+
 
   const handleLogout = async () => {
     try {
@@ -17,6 +19,7 @@ function Navigation() {
   };
 
   return (
+
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
         <LinkContainer to="/">
@@ -44,23 +47,17 @@ function Navigation() {
             </LinkContainer>
           </Nav>
 
-          <Nav>
             {currentUser ? (
               <>
+
                 <Navbar.Text className="me-3">
                   Hola, {currentUser.email}
                 </Navbar.Text>
                 <Nav.Link onClick={handleLogout}>Cerrar Sesión</Nav.Link>
+
               </>
             ) : (
-              <>
-                <LinkContainer to="/login">
-                  <Nav.Link>Iniciar Sesión</Nav.Link>
-                </LinkContainer>
-                <LinkContainer to="/register">
-                  <Nav.Link>Registrarse</Nav.Link>
-                </LinkContainer>
-              </>
+              <Nav.Link as={Link} to="/login">Login</Nav.Link>
             )}
           </Nav>
         </Navbar.Collapse>

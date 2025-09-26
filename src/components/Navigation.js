@@ -1,45 +1,43 @@
 import React from "react";
-import { Navbar, Nav, Container, Badge, Button } from "react-bootstrap";
+import { Navbar, Nav, Container, Badge } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
-// import { useAuth } from "../contexts/AuthContext"; // Firebase version
-import { useAuth } from "../contexts/AuthContextSafe"; // Safe version with fallback
+import { useAuth } from "../contexts/AuthContextSafe";
 import { useCart } from "../contexts/CartContext";
 
 function Navigation() {
   const { currentUser, logout } = useAuth();
-  const { getCartItemCount } = useCart();
+  const { getCartItemsCount } = useCart();
 
   const handleLogout = async () => {
     try {
       await logout();
     } catch (error) {
-      console.error("Failed to log out:", error);
+      console.error("Error al cerrar sesión:", error);
     }
   };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+    <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
         <LinkContainer to="/">
-          <Navbar.Brand>TechStore</Navbar.Brand>
+          <Navbar.Brand>CucShop</Navbar.Brand>
         </LinkContainer>
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
-
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <LinkContainer to="/">
               <Nav.Link>Inicio</Nav.Link>
             </LinkContainer>
-            <LinkContainer to="/store">
+            <LinkContainer to="/tienda">
               <Nav.Link>Tienda</Nav.Link>
             </LinkContainer>
-            <LinkContainer to="/cart">
+            <LinkContainer to="/carrito">
               <Nav.Link>
                 Carrito
-                {currentUser && getCartItemCount() > 0 && (
-                  <Badge bg="danger" className="ms-1">
-                    {getCartItemCount()}
+                {currentUser && getCartItemsCount() > 0 && (
+                  <Badge bg="danger" className="ms-2">
+                    {getCartItemsCount()}
                   </Badge>
                 )}
               </Nav.Link>
@@ -52,9 +50,7 @@ function Navigation() {
                 <Navbar.Text className="me-3">
                   Hola, {currentUser.email}
                 </Navbar.Text>
-                <Button variant="outline-light" onClick={handleLogout}>
-                  Cerrar Sesión
-                </Button>
+                <Nav.Link onClick={handleLogout}>Cerrar Sesión</Nav.Link>
               </>
             ) : (
               <>

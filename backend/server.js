@@ -71,271 +71,174 @@ app.get("/api/products", async (req, res) => {
       onSale,
     });
 
-    // Try to get products from Firestore first
-    if (db) {
-      console.log("🔍 Using Firestore database");
-      try {
-        let productsQuery = db.collection("catalogo");
-
-        // Apply simple filters that work well with Firestore
-        if (category) {
-          productsQuery = productsQuery.where("categoria", "==", category);
-        }
-
-        const snapshot = await productsQuery.get();
-        let products = [];
-
-        snapshot.forEach((doc) => {
-          products.push({ id: doc.id, ...doc.data() });
-        });
-
-        // Apply JavaScript filters for better type handling
-        if (onSale === "true") {
-          console.log("🔍 Filtering products on sale");
-          products = products.filter((product) => {
-            const isOnSale =
-              product.enDescuento === true ||
-              product.enDescuento === "true" ||
-              product.enDescuento === 1;
-            console.log(
-              `Product: ${product.nombre}, enDescuento: ${
-                product.enDescuento
-              } (${typeof product.enDescuento}), isOnSale: ${isOnSale}`
-            );
-            return isOnSale;
-          });
-        }
-        if (featured === "true") {
-          products = products.filter((product) => {
-            return (
-              product.destacado === true ||
-              product.destacado === "true" ||
-              product.destacado === 1
-            );
-          });
-        }
-        if (popular === "true") {
-          products = products.filter((product) => {
-            return (
-              product.popular === true ||
-              product.popular === "true" ||
-              product.popular === 1
-            );
-          });
-        }
-
-        // Apply search filter (Firestore doesn't support full-text search easily)
-        if (search) {
-          products = products.filter(
-            (p) =>
-              p.nombre?.toLowerCase().includes(search.toLowerCase()) ||
-              p.descripcion?.toLowerCase().includes(search.toLowerCase())
-          );
-        }
-
-        console.log(
-          `📦 Retrieved ${products.length} products from catalogo collection`
-        );
-
-        // Debug: Log all products with their enDescuento status
-        products.forEach((product) => {
-          console.log(
-            `📦 Product: ${product.nombre}, enDescuento: ${
-              product.enDescuento
-            }, type: ${typeof product.enDescuento}`
-          );
-        });
-
-        return res.json(products);
-      } catch (firestoreError) {
-        console.warn(
-          "Firestore query failed, falling back to mock data:",
-          firestoreError.message
-        );
-        console.warn("Full error:", firestoreError);
-      }
-    } else {
-      console.log("🔍 No Firestore database, using mock data");
+    // Require Firestore database
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
     }
 
-    // Fallback to mock data
-    console.log("Using mock data for products");
-    const products = [
-      {
-        id: "1",
-        title: "Smartphone Prso",
-        price: 899.99,
-        originalPrice: 1199.99,
-        discount: 25,
-        category: "electronics",
-        description: "Latest smartphone with advanced features",
-        image:
-          "https://www.indumil.gov.co/wp-content/uploads/2024/02/37185-DEFAULT-l.jpg",
-        featured: true,
-        popular: true,
-        onSale: true,
-        stock: 15,
-        rating: 4.8,
-      },
-      {
-        id: "2",
-        title: "Wireless Headphones",
-        price: 199.99,
-        originalPrice: 249.99,
-        discount: 20,
-        category: "electronics",
-        description: "Premium wireless headphones with noise cancellation",
-        image: "https://via.placeholder.com/300x300?text=Headphones",
-        featured: true,
-        popular: true,
-        onSale: true,
-        stock: 8,
-        rating: 4.6,
-      },
-      {
-        id: "3",
-        title: "Running Shoes",
-        price: 129.99,
-        originalPrice: 179.99,
-        discount: 28,
-        category: "sports",
-        description: "Comfortable running shoes for all terrains",
-        image: "https://via.placeholder.com/300x300?text=Shoes",
-        featured: false,
-        popular: false,
-        onSale: true,
-        stock: 25,
-        rating: 4.3,
-      },
-      {
-        id: "4",
-        title: "Coffee Maker",
-        price: 79.99,
-        category: "home",
-        description: "Automatic coffee maker with programmable timer",
-        image: "https://via.placeholder.com/300x300?text=Coffee+Maker",
-        featured: true,
-        popular: true,
-        onSale: false,
-        stock: 12,
-        rating: 4.5,
-      },
-      {
-        id: "5",
-        title: "Gaming Laptop",
-        price: 1299.99,
-        originalPrice: 1599.99,
-        discount: 19,
-        category: "electronics",
-        description: "High-performance gaming laptop with RTX graphics",
-        image: "https://via.placeholder.com/300x300?text=Gaming+Laptop",
-        featured: false,
-        popular: true,
-        onSale: true,
-        stock: 5,
-        rating: 4.9,
-      },
-      {
-        id: "6",
-        title: "Fitness Tracker",
-        price: 89.99,
-        originalPrice: 119.99,
-        discount: 25,
-        category: "sports",
-        description: "Advanced fitness tracker with heart rate monitor",
-        image: "https://via.placeholder.com/300x300?text=Fitness+Tracker",
-        featured: false,
-        popular: true,
-        onSale: true,
-        stock: 30,
-        rating: 4.4,
-      },
-      {
-        id: "7",
-        title: "Bluetooth Speaker",
-        price: 49.99,
-        category: "electronics",
-        description: "Portable bluetooth speaker with excellent sound quality",
-        image: "https://via.placeholder.com/300x300?text=Speaker",
-        featured: false,
-        popular: true,
-        onSale: false,
-        stock: 20,
-        rating: 4.2,
-      },
-      {
-        id: "8",
-        title: "Yoga Mat",
-        price: 24.99,
-        originalPrice: 39.99,
-        discount: 38,
-        category: "sports",
-        description: "Premium eco-friendly yoga mat with alignment guides",
-        image: "https://via.placeholder.com/300x300?text=Yoga+Mat",
-        featured: false,
-        popular: false,
-        onSale: true,
-        stock: 50,
-        rating: 4.1,
-      },
-    ];
+    console.log("🔍 Using Firestore database");
+    let productsQuery = db.collection("catalogo");
 
-    let filteredProducts = products;
-
+    // Apply simple filters that work well with Firestore
     if (category) {
-      filteredProducts = filteredProducts.filter(
-        (p) => p.category === category
-      );
+      productsQuery = productsQuery.where("categoria", "==", category);
     }
 
-    if (search) {
-      filteredProducts = filteredProducts.filter(
-        (p) =>
-          p.title.toLowerCase().includes(search.toLowerCase()) ||
-          p.description.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    const snapshot = await productsQuery.get();
+    let products = [];
 
-    if (featured === "true") {
-      filteredProducts = filteredProducts.filter((p) => p.featured);
-    }
+    snapshot.forEach((doc) => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
 
-    if (popular === "true") {
-      filteredProducts = filteredProducts.filter((p) => p.popular);
-    }
-
+    // Apply JavaScript filters for better type handling
     if (onSale === "true") {
-      filteredProducts = filteredProducts.filter((p) => p.onSale);
+      console.log("🔍 Filtering products on sale");
+      products = products.filter((product) => {
+        const isOnSale =
+          product.enDescuento === true ||
+          product.enDescuento === "true" ||
+          product.enDescuento === 1;
+        console.log(
+          `Product: ${product.nombre}, enDescuento: ${
+            product.enDescuento
+          } (${typeof product.enDescuento}), isOnSale: ${isOnSale}`
+        );
+        return isOnSale;
+      });
+    }
+    if (featured === "true") {
+      products = products.filter((product) => {
+        return (
+          product.destacado === true ||
+          product.destacado === "true" ||
+          product.destacado === 1
+        );
+      });
+    }
+    if (popular === "true") {
+      products = products.filter((product) => {
+        return (
+          product.popular === true ||
+          product.popular === "true" ||
+          product.popular === 1
+        );
+      });
     }
 
-    res.json(filteredProducts);
+    // Apply search filter (Firestore doesn't support full-text search easily)
+    if (search) {
+      products = products.filter(
+        (p) =>
+          p.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+          p.descripcion?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    console.log(
+      `📦 Retrieved ${products.length} products from catalogo collection`
+    );
+
+    // Debug: Log all products with their enDescuento status
+    products.forEach((product) => {
+      console.log(
+        `📦 Product: ${product.nombre}, enDescuento: ${
+          product.enDescuento
+        }, type: ${typeof product.enDescuento}`
+      );
+    });
+
+    return res.json(products);
   } catch (error) {
+    console.error("Error fetching products:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get("/api/products/:id", async (req, res) => {
   try {
-    // Mock data - replace with Firestore query
-    const products = [
-      {
-        id: "1",
-        title: "Smartphone Pro",
-        price: 899.99,
-        category: "electronics",
-        description: "Latest smartphone with advanced features",
-        image: "https://via.placeholder.com/300x300?text=Smartphone",
-        featured: true,
-      },
-    ];
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
+    }
 
-    const product = products.find((p) => p.id === req.params.id);
-    if (!product) {
+    const productDoc = await db.collection("catalogo").doc(req.params.id).get();
+
+    if (!productDoc.exists) {
       return res.status(404).json({ error: "Product not found" });
     }
 
+    const product = { id: productDoc.id, ...productDoc.data() };
     res.json(product);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create new product
+app.post("/api/products", async (req, res) => {
+  try {
+    console.log("🆕 Creating new product:", req.body);
+
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
+    }
+
+    const {
+      categoria,
+      descripcion,
+      img,
+      nombre,
+      precio,
+      rating,
+      stock,
+      destacado = false,
+      enDescuento = false,
+      popular = false,
+    } = req.body;
+
+    // Validate required fields
+    if (!nombre || !categoria || precio == null) {
+      return res.status(400).json({
+        error:
+          "Missing required fields: nombre, categoria, and precio are required",
+      });
+    }
+
+    // Create product object
+    const productData = {
+      categoria,
+      descripcion: descripcion || "",
+      img: img || "",
+      nombre,
+      precio: Number(precio),
+      rating: Number(rating) || 0,
+      stock: Number(stock) || 0,
+      destacado: Boolean(destacado),
+      enDescuento: Boolean(enDescuento),
+      popular: Boolean(popular),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Add product to Firestore
+    const docRef = await db.collection("catalogo").add(productData);
+
+    console.log("✅ Product created with ID:", docRef.id);
+
+    // Return the created product with its ID
+    const createdProduct = {
+      id: docRef.id,
+      ...productData,
+    };
+
+    res.status(201).json(createdProduct);
+  } catch (error) {
+    console.error("❌ Error creating product:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -346,106 +249,77 @@ app.get("/api/categories", async (req, res) => {
     console.log("🔍 Categories endpoint called");
     console.log("🔍 DB connection status:", db ? "Connected" : "Not connected");
 
-    // Try to get categories from Firestore first
-    if (db) {
-      try {
-        console.log("🔍 Attempting to get categories from Firebase...");
-
-        // First, try to get from dedicated categories collection
-        console.log("🔍 Checking categorias collection...");
-        const categoriesSnapshot = await db
-          .collection("categorias")
-          .where("activa", "==", true)
-          .get();
-
-        console.log("🔍 Categories snapshot empty:", categoriesSnapshot.empty);
-
-        if (!categoriesSnapshot.empty) {
-          const categoryData = [];
-          categoriesSnapshot.forEach((doc) => {
-            const category = doc.data();
-            categoryData.push({
-              id: category.id,
-              name: category.nombre || formatCategoryName(category.id),
-              description: category.descripcion,
-              icon: category.icono,
-            });
-          });
-
-          console.log(
-            `📂 Retrieved ${categoryData.length} categories from categorias collection`
-          );
-          return res.json(categoryData);
-        }
-
-        // If no categories collection, extract from products
-        console.log(
-          "🔍 No categorias collection found, extracting from products..."
-        );
-        const productsSnapshot = await db.collection("catalogo").get();
-        console.log("🔍 Products found:", productsSnapshot.size);
-
-        const categoriesSet = new Set();
-        const categoryData = [];
-
-        productsSnapshot.forEach((doc) => {
-          const product = doc.data();
-          console.log("🔍 Product categoria:", product.categoria);
-          if (product.categoria) {
-            categoriesSet.add(product.categoria);
-          }
-        });
-
-        console.log("🔍 Unique categories found:", Array.from(categoriesSet));
-
-        // Convert unique categories to the expected format
-        categoriesSet.forEach((category) => {
-          categoryData.push({
-            id: category,
-            name: formatCategoryName(category),
-            description: `Productos de ${formatCategoryName(
-              category
-            ).toLowerCase()}`,
-          });
-        });
-
-        console.log(
-          `📦 Retrieved ${categoryData.length} categories from products collection:`,
-          categoryData
-        );
-        return res.json(categoryData);
-      } catch (firestoreError) {
-        console.error(
-          "❌ Firestore query failed for categories, falling back to mock data:",
-          firestoreError.message,
-          firestoreError.stack
-        );
-      }
-    } else {
-      console.log("❌ No DB connection available");
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
     }
 
-    // Fallback to mock data
-    console.log("📦 Using mock categories data");
-    const categories = [
-      {
-        id: "electronics",
-        name: "Electrónicos",
-        description: "Dispositivos electrónicos y tecnología",
-      },
-      {
-        id: "sports",
-        name: "Deportes",
-        description: "Artículos deportivos y fitness",
-      },
-      {
-        id: "home",
-        name: "Hogar y Jardín",
-        description: "Artículos para el hogar y jardín",
-      },
-      { id: "fashion", name: "Moda", description: "Ropa y accesorios de moda" },
-    ];
-    res.json(categories);
+    console.log("🔍 Attempting to get categories from Firebase...");
+
+    // First, try to get from dedicated categories collection
+    console.log("🔍 Checking categorias collection...");
+    const categoriesSnapshot = await db
+      .collection("categorias")
+      .where("activa", "==", true)
+      .get();
+
+    console.log("🔍 Categories snapshot empty:", categoriesSnapshot.empty);
+
+    if (!categoriesSnapshot.empty) {
+      const categoryData = [];
+      categoriesSnapshot.forEach((doc) => {
+        const category = doc.data();
+        categoryData.push({
+          id: category.id,
+          name: category.nombre || formatCategoryName(category.id),
+          description: category.descripcion,
+          icon: category.icono,
+        });
+      });
+
+      console.log(
+        `📂 Retrieved ${categoryData.length} categories from categorias collection`
+      );
+      return res.json(categoryData);
+    }
+
+    // If no categories collection, extract from products
+    console.log(
+      "🔍 No categorias collection found, extracting from products..."
+    );
+    const productsSnapshot = await db.collection("catalogo").get();
+    console.log("🔍 Products found:", productsSnapshot.size);
+
+    const categoriesSet = new Set();
+    const categoryData = [];
+
+    productsSnapshot.forEach((doc) => {
+      const product = doc.data();
+      console.log("🔍 Product categoria:", product.categoria);
+      if (product.categoria) {
+        categoriesSet.add(product.categoria);
+      }
+    });
+
+    console.log("🔍 Unique categories found:", Array.from(categoriesSet));
+
+    // Convert unique categories to the expected format
+    categoriesSet.forEach((category) => {
+      categoryData.push({
+        id: category,
+        name: formatCategoryName(category),
+        description: `Productos de ${formatCategoryName(
+          category
+        ).toLowerCase()}`,
+      });
+    });
+
+    console.log(
+      `📦 Retrieved ${categoryData.length} categories from products collection:`,
+      categoryData
+    );
+    return res.json(categoryData);
   } catch (error) {
     console.error("❌ Categories endpoint error:", error.message, error.stack);
     res.status(500).json({ error: error.message });
@@ -582,121 +456,167 @@ app.delete("/api/categories/:id", async (req, res) => {
   }
 });
 
-// Discount coupons/bonuses endpoint
-app.get("/api/discount-coupons", (req, res) => {
-  const coupons = [
-    {
-      id: "WELCOME10",
-      code: "WELCOME10",
-      description: "10% de descuento para nuevos usuarios",
-      discount: 10,
-      type: "percentage",
-      minPurchase: 50000,
-      maxDiscount: 20000,
-      expiresAt: "2025-12-31",
-      active: true,
-      usageLimit: 100,
-      usedCount: 25,
-    },
-    {
-      id: "SAVE20",
-      code: "SAVE20",
-      description: "20% de descuento en compras superiores a $200,000",
-      discount: 20,
-      type: "percentage",
-      minPurchase: 200000,
-      maxDiscount: 50000,
-      expiresAt: "2025-11-30",
-      active: true,
-      usageLimit: 50,
-      usedCount: 12,
-    },
-    {
-      id: "FIXED30",
-      code: "FIXED30",
-      description: "$30,000 de descuento fijo",
-      discount: 30000,
-      type: "fixed",
-      minPurchase: 100000,
-      maxDiscount: 30000,
-      expiresAt: "2025-10-31",
-      active: true,
-      usageLimit: 200,
-      usedCount: 89,
-    },
-  ];
-  res.json(coupons);
+// Discount cupones/bonuses endpoint
+app.get("/api/cupones", async (req, res) => {
+  try {
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
+    }
+
+    const couponsSnapshot = await db.collection("cupones").get();
+    const coupons = [];
+
+    couponsSnapshot.forEach((doc) => {
+      const couponData = doc.data();
+      coupons.push({
+        id: doc.id,
+        code: couponData.codigo, // Firebase field: codigo
+        title: couponData.nombre || `Descuento ${couponData.descuento}% `, // Dynamic title based on discount
+        description: `Obtén ${couponData.descuento}% de descuento en tu compra`,
+        discount: couponData.descuento, // Firebase field: descuento
+        type: "percentage", // Default type
+        validUntil: couponData.fechaVencimiento, // Firebase field: fechaVencimiento
+        active: couponData.active !== false,
+        nombre: couponData.nombre, // Keep original nombre field
+        ...couponData,
+      });
+    });
+
+    res.json(coupons);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Alias for English endpoint - redirect to Spanish endpoint
+app.get("/api/coupons", async (req, res) => {
+  try {
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
+    }
+
+    const couponsSnapshot = await db.collection("cupones").get();
+    const coupons = [];
+
+    couponsSnapshot.forEach((doc) => {
+      const couponData = doc.data();
+      coupons.push({
+        id: doc.id,
+        code: couponData.codigo || couponData.code, // Firebase field: codigo
+        title: `Descuento ${couponData.descuento}% OFF`, // Dynamic title based on discount
+        description: `Obtén ${couponData.descuento}% de descuento en tu compra`,
+        discount: couponData.descuento, // Firebase field: descuento
+        type: "percentage", // Default type
+        minPurchase: couponData.compraMinima || 0,
+        maxDiscount: couponData.descuentoMaximo,
+        validUntil: couponData.fechaVencimiento, // Firebase field: fechaVencimiento
+        active: couponData.active !== false,
+        usageLimit: couponData.limiteUso,
+        usedCount: couponData.vecesUsado || 0,
+        nombre: couponData.nombre, // Keep original nombre field
+        ...couponData,
+      });
+    });
+
+    res.json(coupons);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Validate discount coupon
-app.post("/api/validate-coupon", (req, res) => {
+app.post("/api/validate-coupon", async (req, res) => {
   try {
     const { code, cartTotal } = req.body;
 
-    // Mock coupon validation
-    const coupons = [
-      {
-        id: "WELCOME10",
-        code: "WELCOME10",
-        description: "10% de descuento para nuevos usuarios",
-        discount: 10,
-        type: "percentage",
-        minPurchase: 50000,
-        maxDiscount: 20000,
-        active: true,
-      },
-      {
-        id: "SAVE20",
-        code: "SAVE20",
-        description: "20% de descuento en compras superiores a $200,000",
-        discount: 20,
-        type: "percentage",
-        minPurchase: 200000,
-        maxDiscount: 50000,
-        active: true,
-      },
-      {
-        id: "FIXED30",
-        code: "FIXED30",
-        description: "$30,000 de descuento fijo",
-        discount: 30000,
-        type: "fixed",
-        minPurchase: 100000,
-        maxDiscount: 30000,
-        active: true,
-      },
-    ];
-
-    const coupon = coupons.find((c) => c.code === code.toUpperCase());
-
-    if (!coupon) {
-      return res.status(404).json({ error: "Cupón no válido", valid: false });
-    }
-
-    if (!coupon.active) {
-      return res.status(400).json({ error: "Cupón expirado", valid: false });
-    }
-
-    if (cartTotal < coupon.minPurchase) {
-      return res.status(400).json({
-        error: `Compra mínima requerida: $${coupon.minPurchase.toLocaleString()}`,
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
         valid: false,
       });
     }
 
+    // First try to find coupon by 'codigo' field
+    const couponsSnapshot = await db
+      .collection("cupones")
+      .where("codigo", "==", code.toUpperCase())
+      .limit(1)
+      .get();
+
+    let couponsSnapshot2;
+    if (couponsSnapshot.empty) {
+      // Try searching by nombre field as fallback
+      couponsSnapshot2 = await db
+        .collection("cupones")
+        .where("nombre", "==", code.toLowerCase())
+        .limit(1)
+        .get();
+
+      if (couponsSnapshot2.empty) {
+        return res.status(404).json({ error: "Cupón no válido", valid: false });
+      }
+    }
+
+    const couponDoc = couponsSnapshot.empty
+      ? couponsSnapshot2.docs[0]
+      : couponsSnapshot.docs[0];
+    const coupon = couponDoc.data();
+
+    // Check if coupon is active and not used
+    if (coupon.active === false || coupon.used === true) {
+      return res
+        .status(400)
+        .json({ error: "Cupón expirado o ya usado", valid: false });
+    }
+
+    // Check if coupon has expired (fechaVencimiento is a timestamp)
+    if (coupon.fechaVencimiento) {
+      const expirationDate = coupon.fechaVencimiento.toDate
+        ? coupon.fechaVencimiento.toDate()
+        : new Date(coupon.fechaVencimiento);
+
+      if (new Date() > expirationDate) {
+        return res.status(400).json({
+          error: "Cupón vencido",
+          valid: false,
+        });
+      }
+    }
+
+    // Check minimum purchase requirement
+    const minPurchase = coupon.compraMinima || 0;
+    if (cartTotal < minPurchase) {
+      return res.status(400).json({
+        error: `Compra mínima requerida: $${minPurchase.toLocaleString()}`,
+        valid: false,
+      });
+    }
+
+    // Calculate discount amount
     let discountAmount = 0;
-    if (coupon.type === "percentage") {
-      discountAmount = Math.min(
-        (cartTotal * coupon.discount) / 100,
-        coupon.maxDiscount
-      );
-    } else if (coupon.type === "fixed") {
-      discountAmount = coupon.discount;
+    const discount = coupon.descuento || 0; // Use 'descuento' field from Firebase
+    const type = "percentage"; // Default to percentage since your data shows numeric discount
+
+    if (type === "percentage") {
+      const maxDiscount = coupon.descuentoMaximo || Infinity;
+      discountAmount = Math.min((cartTotal * discount) / 100, maxDiscount);
+    } else if (type === "fixed") {
+      discountAmount = discount;
     }
 
     res.json({
       valid: true,
-      coupon: coupon,
+      coupon: {
+        id: couponDoc.id,
+        code: coupon.codigo,
+        nombre: coupon.nombre,
+        discount: coupon.descuento,
+        validUntil: coupon.fechaVencimiento,
+      },
       discountAmount: discountAmount,
       finalTotal: cartTotal - discountAmount,
     });
@@ -708,21 +628,22 @@ app.post("/api/validate-coupon", (req, res) => {
 // Cart routes (these would typically use user authentication)
 app.get("/api/cart/:userId", async (req, res) => {
   try {
-    // Mock cart data
-    const cart = {
-      userId: req.params.userId,
-      items: [
-        {
-          id: "1",
-          productId: "1",
-          title: "Smartphone Pro",
-          price: 899.99,
-          quantity: 1,
-          image: "https://via.placeholder.com/300x300?text=Smartphone",
-        },
-      ],
-    };
-    res.json(cart);
+    if (!db) {
+      return res.status(503).json({
+        error: "Error al conectar con la base de datos. ",
+      });
+    }
+
+    const cartDoc = await db
+      .collection("carritos")
+      .doc(req.params.userId)
+      .get();
+
+    if (!cartDoc.exists) {
+      return res.json({ userId: req.params.userId, items: [] });
+    }
+
+    res.json({ id: cartDoc.id, ...cartDoc.data() });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -730,8 +651,44 @@ app.get("/api/cart/:userId", async (req, res) => {
 
 app.post("/api/cart/:userId/add", async (req, res) => {
   try {
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
+    }
+
     const { productId, quantity = 1 } = req.body;
-    // Add to cart logic here
+    const userId = req.params.userId;
+
+    // Get or create cart
+    const cartRef = db.collection("carritos").doc(userId);
+    const cartDoc = await cartRef.get();
+
+    if (!cartDoc.exists) {
+      await cartRef.set({
+        userId,
+        items: [{ productId, quantity }],
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      // Update existing cart logic would go here
+      const cartData = cartDoc.data();
+      const existingItemIndex = cartData.items.findIndex(
+        (item) => item.productId === productId
+      );
+
+      if (existingItemIndex > -1) {
+        cartData.items[existingItemIndex].quantity += quantity;
+      } else {
+        cartData.items.push({ productId, quantity });
+      }
+
+      await cartRef.update({
+        items: cartData.items,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
     res.json({ message: "Product added to cart", productId, quantity });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -740,8 +697,14 @@ app.post("/api/cart/:userId/add", async (req, res) => {
 
 app.put("/api/cart/:userId/update/:itemId", async (req, res) => {
   try {
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
+    }
+
     const { quantity } = req.body;
-    // Update cart item logic here
+    // Cart update logic using Firestore would go here
     res.json({
       message: "Cart item updated",
       itemId: req.params.itemId,
@@ -754,7 +717,13 @@ app.put("/api/cart/:userId/update/:itemId", async (req, res) => {
 
 app.delete("/api/cart/:userId/remove/:itemId", async (req, res) => {
   try {
-    // Remove cart item logic here
+    if (!db) {
+      return res.status(503).json({
+        error: "Database not available. Please configure Firebase credentials.",
+      });
+    }
+
+    // Cart item removal logic using Firestore would go here
     res.json({ message: "Cart item removed", itemId: req.params.itemId });
   } catch (error) {
     res.status(500).json({ error: error.message });

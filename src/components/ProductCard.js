@@ -47,6 +47,7 @@ const ProductCard = ({ product }) => {
   };
 
   return (
+
     <Card className="h-100">
       <div className="position-relative">
         <Card.Img
@@ -84,6 +85,7 @@ const ProductCard = ({ product }) => {
         </div>
       </div>
 
+
       <Card.Body className="d-flex flex-column">
         <Card.Title className="h5">{nombre}</Card.Title>
         <Card.Text className="text-muted small">
@@ -102,6 +104,7 @@ const ProductCard = ({ product }) => {
           </div>
         )}
 
+
         {/* Precio */}
         <div className="mb-3">
           {hasDiscount ? (
@@ -115,8 +118,10 @@ const ProductCard = ({ product }) => {
             </>
           ) : (
             <span className="h5 text-primary">${precio.toFixed(2)}</span>
+
           )}
         </div>
+
 
         {/* Stock info */}
         {stock !== undefined && (
@@ -133,6 +138,7 @@ const ProductCard = ({ product }) => {
         >
           {isOutOfStock ? "Sin Stock" : "Agregar al Carrito"}
         </Button>
+
       </Card.Body>
     </Card>
   );

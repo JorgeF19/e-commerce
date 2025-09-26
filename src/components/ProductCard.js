@@ -43,12 +43,15 @@ function ProductCard({ product, showAddToCart = true }) {
           -{product.descuento}%
         </Badge>
       )}
+
+      {/* Imagen del producto con fallback */}
       <Card.Img
         variant="top"
-        src={product.img}
-        style={{ height: "200px", objectFit: "cover" }}
+        src={product.img || "/default-product.png"}
         alt={product.nombre}
+        className="product-image"
       />
+
       <Card.Body className="d-flex flex-column">
         <Card.Title className="h6">{product.nombre}</Card.Title>
         <Card.Text className="text-muted small flex-grow-1">
@@ -75,6 +78,7 @@ function ProductCard({ product, showAddToCart = true }) {
           </div>
         )}
 
+        {/* Badges */}
         <div className="mb-2">
           <Badge bg="secondary" className="me-2">
             {product.categoria}
@@ -92,6 +96,7 @@ function ProductCard({ product, showAddToCart = true }) {
           {product.enDescuento && <Badge bg="danger">En Oferta</Badge>}
         </div>
 
+        {/* Precio + Botón */}
         <div className="d-flex justify-content-between align-items-center mt-auto">
           <div>
             {hasDiscount ? (

@@ -1,70 +1,54 @@
 import React from "react";
-import { Navbar, Nav, Container, Badge, Button } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
-// import { useAuth } from "../contexts/AuthContext"; // Firebase version
-import { useAuth } from "../contexts/AuthContextSafe"; // Safe version with fallback
-import { useCart } from "../contexts/CartContext";
+import { Navbar, Nav, Container, Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContextSafe"; // Hook de autenticación
+import "./Navigation.css";
 
 function Navigation() {
   const { currentUser, logout } = useAuth();
-  const { getCartItemCount } = useCart();
 
   const handleLogout = async () => {
     try {
       await logout();
     } catch (error) {
-      console.error("Failed to log out:", error);
+      console.error("Error al cerrar sesión:", error);
     }
   };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+    <Navbar bg="light" expand="lg" className="shadow-sm py-3">
       <Container>
-        <LinkContainer to="/">
-          <Navbar.Brand>TechStore</Navbar.Brand>
-        </LinkContainer>
-
+        <Navbar.Brand as={Link} to="/">
+          <img
+            src="/logo.png"
+            alt="Tech Store"
+            height="40"
+            className="d-inline-block align-top"
+          />
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
-
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <LinkContainer to="/">
-              <Nav.Link>Inicio</Nav.Link>
-            </LinkContainer>
-            <LinkContainer to="/store">
-              <Nav.Link>Tienda</Nav.Link>
-            </LinkContainer>
-            <LinkContainer to="/cart">
-              <Nav.Link>
-                Carrito
-                {currentUser && getCartItemCount() > 0 && (
-                  <Badge bg="danger" className="ms-1">
-                    {getCartItemCount()}
-                  </Badge>
-                )}
-              </Nav.Link>
-            </LinkContainer>
-          </Nav>
+          <Nav className="ms-auto align-items-center">
+            <Nav.Link as={Link} to="/">Inicio</Nav.Link>
+            <Nav.Link as={Link} to="/store">Tienda</Nav.Link>
+            <Nav.Link as={Link} to="/cart">Carrito</Nav.Link>
 
-          <Nav>
             {currentUser ? (
               <>
-                <Navbar.Text className="me-3">
-                  Hola, {currentUser.email}
-                </Navbar.Text>
-                <Button variant="outline-light" onClick={handleLogout}>
-                  Cerrar Sesión
+                <span className="ms-3 fw-semibold text-primary">
+                  👋 Bienvenido {currentUser.displayName || currentUser.email}
+                </span>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  className="ms-3"
+                  onClick={handleLogout}
+                >
+                  Logout
                 </Button>
               </>
             ) : (
-              <>
-                <LinkContainer to="/login">
-                  <Nav.Link>Iniciar Sesión</Nav.Link>
-                </LinkContainer>
-                <LinkContainer to="/register">
-                  <Nav.Link>Registrarse</Nav.Link>
-                </LinkContainer>
-              </>
+              <Nav.Link as={Link} to="/login">Login</Nav.Link>
             )}
           </Nav>
         </Navbar.Collapse>

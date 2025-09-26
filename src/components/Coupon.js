@@ -23,9 +23,7 @@ function Coupon({ coupon, onClaim, isAlreadyClaimed, claimingCoupon }) {
           <small className="text-muted d-block mb-2">
             Código: <strong>{coupon.code}</strong>
           </small>
-          <small className="text-muted d-block mb-3">
-            Válido hasta: {new Date(coupon.validUntil).toLocaleDateString()}
-          </small>
+
           <Button
             variant={isAlreadyClaimed ? "secondary" : "primary"}
             onClick={handleClaim}

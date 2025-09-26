@@ -1,0 +1,44 @@
+[build]
+  # Directorio donde se construye la aplicación
+  publish = "build"
+  
+  # Comando para construir la aplicación
+  command = "npm run build"
+  
+  # Directorio base (importante para proyectos con subdirectorios)
+  base = ""
+
+[build.environment]
+  # Versión de Node.js
+  NODE_VERSION = "18"
+  
+  # Configuraciones para React
+  GENERATE_SOURCEMAP = "false"
+  CI = "false"
+
+# Configuración de redirects para SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Headers específicos para archivos estáticos
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Headers para el service worker
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"

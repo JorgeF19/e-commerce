@@ -1,14 +1,13 @@
 import React from "react";
-
-import { Navbar, Nav, Container, Badge } from "react-bootstrap";
+import { Navbar, Nav, Container, Button, Badge } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContextSafe"; // Hook de autenticación
+import "./Navigation.css";
 import { LinkContainer } from "react-router-bootstrap";
-import { useAuth } from "../contexts/AuthContextSafe";
 import { useCart } from "../contexts/CartContext";
-
 function Navigation() {
   const { currentUser, logout } = useAuth();
   const { getCartItemsCount } = useCart();
-
 
   const handleLogout = async () => {
     try {
@@ -19,16 +18,19 @@ function Navigation() {
   };
 
   return (
-
-    <Navbar bg="dark" variant="dark" expand="lg">
+    <Navbar bg="light" expand="lg" className="shadow-sm py-3">
       <Container>
-        <LinkContainer to="/">
-          <Navbar.Brand>CucShop</Navbar.Brand>
-        </LinkContainer>
-
+        <Navbar.Brand as={Link} to="/">
+          <img
+            src="/logo.png"
+            alt="Tech Store"
+            height="40"
+            className="d-inline-block align-top"
+          />
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
+<Nav className="me-auto">
             <LinkContainer to="/">
               <Nav.Link>Inicio</Nav.Link>
             </LinkContainer>
@@ -49,21 +51,25 @@ function Navigation() {
 
             {currentUser ? (
               <>
-
-                <Navbar.Text className="me-3">
-                  Hola, {currentUser.email}
-                </Navbar.Text>
-                <Nav.Link onClick={handleLogout}>Cerrar Sesión</Nav.Link>
-
+                <span className="ms-3 fw-semibold text-primary">
+                  👋 Bienvenido {currentUser.displayName || currentUser.email}
+                </span>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  className="ms-3"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
               </>
             ) : (
               <Nav.Link as={Link} to="/login">Login</Nav.Link>
             )}
-          </Nav>
-        </Navbar.Collapse>
+              </Navbar.Collapse>
       </Container>
-    </Navbar>
-  );
+      </Navbar>
+  
+);
 }
-
 export default Navigation;

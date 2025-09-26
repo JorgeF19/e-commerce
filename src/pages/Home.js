@@ -437,7 +437,7 @@ function Home() {
       <div className="bg-primary text-white p-5 rounded mb-5">
         <Row>
           <Col md={8}>
-            <h1 className="display-4 fw-bold">¡Bienvenido a CucShop!</h1>
+            <h1 className="display-4 fw-bold">¡Bienvenido a TechStore!</h1>
             <p className="lead">
               Descubre los mejores productos tecnológicos al mejor precio. Desde
               smartphones hasta accesorios para el hogar.

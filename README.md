@@ -1,4 +1,4 @@
-# TechStore - E-commerce React Application
+# CucShop - E-commerce React Application
 
 Una aplicación de comercio electrónico moderna construida con React, Express.js y Firebase Firestore.
 
@@ -45,8 +45,8 @@ Una aplicación de comercio electrónico moderna construida con React, Express.j
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/techstore-ecommerce.git
-cd techstore-ecommerce
+git clone https://github.com/tu-usuario/CucShop-ecommerce.git
+cd CucShop-ecommerce
 ```
 
 ### 2. Configurar el Frontend
@@ -107,7 +107,7 @@ npm start
 ## 📚 Estructura del Proyecto
 
 ```
-techstore-ecommerce/
+CucShop-ecommerce/
 ├── public/                     # Archivos públicos
 ├── src/                       # Código fuente del frontend
 │   ├── components/            # Componentes reutilizables
@@ -235,7 +235,7 @@ Tu Nombre - [@tu-usuario](https://github.com/tu-usuario)
 
 ## 📞 Soporte
 
-Si tienes alguna pregunta o problema, por favor abre un [issue](https://github.com/tu-usuario/techstore-ecommerce/issues) en GitHub.
+Si tienes alguna pregunta o problema, por favor abre un [issue](https://github.com/tu-usuario/CucShop-ecommerce/issues) en GitHub.
 
 ---
 

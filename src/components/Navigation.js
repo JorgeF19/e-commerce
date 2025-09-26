@@ -1,11 +1,14 @@
 import React from "react";
-import { Navbar, Nav, Container, Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContextSafe"; // Hook de autenticación
-import "./Navigation.css";
+
+import { Navbar, Nav, Container, Badge } from "react-bootstrap";
+import { LinkContainer } from "react-router-bootstrap";
+import { useAuth } from "../contexts/AuthContextSafe";
+import { useCart } from "../contexts/CartContext";
 
 function Navigation() {
   const { currentUser, logout } = useAuth();
+  const { getCartItemsCount } = useCart();
+
 
   const handleLogout = async () => {
     try {
@@ -16,36 +19,42 @@ function Navigation() {
   };
 
   return (
-    <Navbar bg="light" expand="lg" className="shadow-sm py-3">
+
+    <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
-        <Navbar.Brand as={Link} to="/">
-          <img
-            src="/logo.png"
-            alt="Tech Store"
-            height="40"
-            className="d-inline-block align-top"
-          />
-        </Navbar.Brand>
+        <LinkContainer to="/">
+          <Navbar.Brand>CucShop</Navbar.Brand>
+        </LinkContainer>
+
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto align-items-center">
-            <Nav.Link as={Link} to="/">Inicio</Nav.Link>
-            <Nav.Link as={Link} to="/store">Tienda</Nav.Link>
-            <Nav.Link as={Link} to="/cart">Carrito</Nav.Link>
+          <Nav className="me-auto">
+            <LinkContainer to="/">
+              <Nav.Link>Inicio</Nav.Link>
+            </LinkContainer>
+            <LinkContainer to="/tienda">
+              <Nav.Link>Tienda</Nav.Link>
+            </LinkContainer>
+            <LinkContainer to="/carrito">
+              <Nav.Link>
+                Carrito
+                {currentUser && getCartItemsCount() > 0 && (
+                  <Badge bg="danger" className="ms-2">
+                    {getCartItemsCount()}
+                  </Badge>
+                )}
+              </Nav.Link>
+            </LinkContainer>
+          </Nav>
 
             {currentUser ? (
               <>
-                <span className="ms-3 fw-semibold text-primary">
-                  👋 Bienvenido {currentUser.displayName || currentUser.email}
-                </span>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  className="ms-3"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </Button>
+
+                <Navbar.Text className="me-3">
+                  Hola, {currentUser.email}
+                </Navbar.Text>
+                <Nav.Link onClick={handleLogout}>Cerrar Sesión</Nav.Link>
+
               </>
             ) : (
               <Nav.Link as={Link} to="/login">Login</Nav.Link>

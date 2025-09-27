@@ -597,7 +597,7 @@ function Home() {
               <h2 className="text-success"> Productos Populares</h2>
               <p className="text-muted">Los más vendidos y mejor valorados</p>
             </div>
-            <Link to="/store?popular=true">
+            <Link to="/tienda?popular=true">
               <Button variant="outline-success">Ver Todos los Populares</Button>
             </Link>
           </Col>
@@ -619,7 +619,7 @@ function Home() {
               <h2 className="text-primary"> Productos Destacados</h2>
               <p className="text-muted">Seleccionados especialmente para ti</p>
             </div>
-            <Link to="/store?featured=true">
+            <Link to="/tienda?featured=true">
               <Button variant="outline-primary">
                 Ver Todos los Destacados
               </Button>

@@ -109,8 +109,14 @@ function Cart() {
 
   // Función para manejar la aplicación de cupones
   const handleCouponApply = (couponData) => {
-    setAppliedCoupon(couponData.coupon);
-    setDiscountAmount(couponData.discountAmount);
+    if (couponData && couponData.coupon) {
+      setAppliedCoupon(couponData.coupon);
+      setDiscountAmount(couponData.discountAmount);
+    } else {
+      // Si couponData es null (cuando se remueve el cupón), limpiar el estado
+      setAppliedCoupon(null);
+      setDiscountAmount(0);
+    }
   };
 
   // Función para remover cupón aplicado
@@ -452,18 +458,6 @@ function Cart() {
                                       coupon.discount || coupon.descuento
                                     }% OFF`}
                                 </small>
-                                {coupon.validUntil && (
-                                  <div className="text-muted small">
-                                    Válido hasta:{" "}
-                                    {coupon.validUntil.toDate
-                                      ? coupon.validUntil
-                                          .toDate()
-                                          .toLocaleDateString()
-                                      : new Date(
-                                          coupon.validUntil
-                                        ).toLocaleDateString()}
-                                  </div>
-                                )}
                               </div>
                               <div className="d-flex flex-column align-items-end">
                                 <Badge bg="secondary" className="small mb-2">

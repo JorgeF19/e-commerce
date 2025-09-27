@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../contexts/AuthContextSafe"; // Hook de autenticación
 import { db } from "../firebase/config"; // Ajustar ruta según sea necesario
 import {
   collection,
@@ -25,6 +26,7 @@ import ProductList from "../components/ProductList";
 import CouponList from "../components/CouponList";
 
 function Home() {
+  const { currentUser } = useAuth(); // Hook para obtener usuario actual
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [saleProducts, setSaleProducts] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
@@ -53,7 +55,8 @@ function Home() {
     fetchAllProducts();
     fetchCoupons();
     checkClaimedCoupons();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]); // Agregar currentUser como dependencia
 
   const fetchAllProducts = async () => {
     try {

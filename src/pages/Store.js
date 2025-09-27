@@ -98,20 +98,20 @@ function Store() {
   // Función para obtener el título dinámico basado en los filtros
   const getPageTitle = () => {
     if (searchParams.get("onSale")) {
-      return "🔥 Productos en Oferta";
+      return "Productos en Oferta";
     }
     if (searchParams.get("featured")) {
-      return "⭐ Productos Destacados";
+      return "Productos Destacados";
     }
     if (searchParams.get("popular")) {
-      return "👑 Productos Populares";
+      return "Productos Populares";
     }
     if (selectedCategory && categories.length > 0) {
       const category = categories.find((c) => c.id === selectedCategory);
-      return `📦 ${category?.name || "Categoría"}`;
+      return `${category?.name || "Categoría"}`;
     }
     if (searchTerm) {
-      return `🔍 Resultados para: "${searchTerm}"`;
+      return `Resultados para: "${searchTerm}"`;
     }
     return "Tienda";
   };

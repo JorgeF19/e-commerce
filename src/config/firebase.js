@@ -33,10 +33,10 @@ try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  console.log("🔥 Firebase initialized successfully");
+  console.log("Firebase initialized successfully");
 } catch (error) {
-  console.error("❌ Firebase initialization failed:", error);
-  console.warn("📝 Please update firebase config in src/config/firebase.js");
+  console.error("Firebase initialization failed:", error);
+  console.warn("Please update firebase config in src/config/firebase.js");
 }
 
 export { auth, db };

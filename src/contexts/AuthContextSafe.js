@@ -5,7 +5,7 @@ const AuthContext = createContext({});
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    console.error("❌ useAuth called outside of AuthProvider");
+    console.error("useAuth called outside of AuthProvider");
     // Return a safe default instead of throwing
     return {
       currentUser: null,
@@ -16,14 +16,14 @@ export function useAuth() {
       error: "Auth context not available",
     };
   }
-  console.log("✅ useAuth called successfully", {
+  console.log("useAuth called successfully", {
     hasCurrentUser: !!context.currentUser,
   });
   return context;
 }
 
 export function AuthProvider({ children }) {
-  console.log("🔧 Using AuthContextSafe provider");
+  console.log("Using AuthContextSafe provider");
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

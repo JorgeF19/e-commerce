@@ -52,11 +52,11 @@ app.get("/api/test", (req, res) => {
 });
 
 app.get("/api/products", async (req, res) => {
-  console.log("🔍 API /products hit");
+  console.log("API /products hit");
   try {
     const { category, search, featured, popular, onSale } = req.query;
 
-    console.log("🔍 Query parameters:", {
+    console.log("Query parameters:", {
       category,
       search,
       featured,
@@ -71,7 +71,7 @@ app.get("/api/products", async (req, res) => {
       });
     }
 
-    console.log("🔍 Using Firestore database");
+    console.log("Using Firestore database");
     let productsQuery = db.collection("catalogo");
 
     if (category) {
@@ -86,7 +86,7 @@ app.get("/api/products", async (req, res) => {
     });
 
     if (onSale === "true") {
-      console.log("🔍 Filtering products on sale");
+      console.log("Filtering products on sale");
       products = products.filter((product) => {
         const isOnSale =
           product.enDescuento === true ||
@@ -128,12 +128,12 @@ app.get("/api/products", async (req, res) => {
     }
 
     console.log(
-      `📦 Retrieved ${products.length} products from catalogo collection`
+      `Retrieved ${products.length} products from catalogo collection`
     );
 
     // products.forEach((product) => {
     //   console.log(
-    //     `📦 Product: ${product.nombre}, enDescuento: ${
+    //     `Product: ${product.nombre}, enDescuento: ${
     //       product.enDescuento
     //     }, type: ${typeof product.enDescuento}`
     //   );
@@ -213,7 +213,7 @@ app.post("/api/products", async (req, res) => {
 
     const docRef = await db.collection("catalogo").add(productData);
 
-    console.log("✅ Product created with ID:", docRef.id);
+    console.log("Product created with ID:", docRef.id);
 
     const createdProduct = {
       id: docRef.id,
@@ -222,15 +222,15 @@ app.post("/api/products", async (req, res) => {
 
     res.status(201).json(createdProduct);
   } catch (error) {
-    console.error("❌ Error creating product:", error);
+    console.error("Error creating product:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get("/api/categories", async (req, res) => {
   try {
-    console.log("🔍 Categories endpoint called");
-    console.log("🔍 DB connection status:", db ? "Connected" : "Not connected");
+    console.log("Categories endpoint called");
+    console.log("DB connection status:", db ? "Connected" : "Not connected");
 
     if (!db) {
       return res.status(503).json({
@@ -238,15 +238,15 @@ app.get("/api/categories", async (req, res) => {
       });
     }
 
-    console.log("🔍 Attempting to get categories from Firebase...");
+    console.log("Attempting to get categories from Firebase...");
 
-    console.log("🔍 Checking categorias collection...");
+    console.log("Checking categorias collection...");
     const categoriesSnapshot = await db
       .collection("categorias")
       .where("activa", "==", true)
       .get();
 
-    console.log("🔍 Categories snapshot empty:", categoriesSnapshot.empty);
+    console.log("Categories snapshot empty:", categoriesSnapshot.empty);
 
     if (!categoriesSnapshot.empty) {
       const categoryData = [];
@@ -266,24 +266,22 @@ app.get("/api/categories", async (req, res) => {
       return res.json(categoryData);
     }
 
-    console.log(
-      "🔍 No categorias collection found, extracting from products..."
-    );
+    console.log("No categorias collection found, extracting from products...");
     const productsSnapshot = await db.collection("catalogo").get();
-    console.log("🔍 Products found:", productsSnapshot.size);
+    console.log("Products found:", productsSnapshot.size);
 
     const categoriesSet = new Set();
     const categoryData = [];
 
     productsSnapshot.forEach((doc) => {
       const product = doc.data();
-      console.log("🔍 Product categoria:", product.categoria);
+      console.log("Product categoria:", product.categoria);
       if (product.categoria) {
         categoriesSet.add(product.categoria);
       }
     });
 
-    console.log("🔍 Unique categories found:", Array.from(categoriesSet));
+    console.log("Unique categories found:", Array.from(categoriesSet));
 
     categoriesSet.forEach((category) => {
       categoryData.push({
@@ -296,12 +294,12 @@ app.get("/api/categories", async (req, res) => {
     });
 
     console.log(
-      `📦 Retrieved ${categoryData.length} categories from products collection:`,
+      `Retrieved ${categoryData.length} categories from products collection:`,
       categoryData
     );
     return res.json(categoryData);
   } catch (error) {
-    console.error("❌ Categories endpoint error:", error.message, error.stack);
+    console.error("Categories endpoint error:", error.message, error.stack);
     res.status(500).json({ error: error.message });
   }
 });
@@ -366,7 +364,7 @@ app.post("/api/categories", async (req, res) => {
         id,
         nombre,
         descripcion: descripcion || `Productos de ${nombre.toLowerCase()}`,
-        icono: icono || "📦",
+        icono: icono || "Categoria",
         activa: true,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -715,7 +713,7 @@ async function initializeFirestoreData() {
 
     if (!catalogoSnapshot.empty) {
       console.log(
-        "📦 Catalogo collection already has data, skipping initialization"
+        "Catalogo collection already has data, skipping initialization"
       );
       return;
     }
@@ -816,14 +814,12 @@ async function initializeFirestoreData() {
     });
 
     await batch.commit();
-    console.log(
-      "✅ Sample products added to catalogo collection successfully!"
-    );
+    console.log("Sample products added to catalogo collection successfully!");
 
     // Inicializar colección de categorías (opcional - para mejor organización)
     await initializeCategoriesCollection();
   } catch (error) {
-    console.error("❌ Error initializing Firestore data:", error);
+    console.error("Error initializing Firestore data:", error);
   }
 }
 
@@ -842,7 +838,7 @@ async function initializeCategoriesCollection() {
         id: "electronics",
         nombre: "Electrónicos",
         descripcion: "Dispositivos electrónicos y tecnología",
-        icono: "📱",
+        icono: "Móviles",
         activa: true,
       },
       {
@@ -863,7 +859,7 @@ async function initializeCategoriesCollection() {
         id: "fashion",
         nombre: "Moda",
         descripcion: "Ropa y accesorios de moda",
-        icono: "👕",
+        icono: "Ropa",
         activa: true,
       },
     ];
@@ -879,14 +875,14 @@ async function initializeCategoriesCollection() {
     });
 
     await categoriesBatch.commit();
-    console.log("✅ Categories collection initialized successfully!");
+    console.log("Categories collection initialized successfully!");
   } catch (error) {
-    console.error("❌ Error initializing categories:", error);
+    console.error("Error initializing categories:", error);
   }
 }
 
 app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 
   // Inicializar datos de Firestore si es necesario
   if (db) {

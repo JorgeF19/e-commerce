@@ -1,13 +1,13 @@
 // Test script to directly test categories endpoint logic
-const admin = require('firebase-admin');
-require('dotenv').config();
+const admin = require("firebase-admin");
+require("dotenv").config();
 
 // Initialize Firebase Admin
-const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DATABASE_URL
+  databaseURL: process.env.FIREBASE_DATABASE_URL,
 });
 
 const db = admin.firestore();
@@ -28,12 +28,12 @@ function formatCategoryName(category) {
     music: "Música",
     gaming: "Videojuegos",
     health: "Salud y Bienestar",
-    
+
     // Spanish categories from Firebase
     electronico: "Electrónicos",
     electronica: "Electrónicos",
     tecnologia: "Tecnología",
-    "Tecnologia": "Tecnología",
+    Tecnologia: "Tecnología",
     otros: "Otros",
     otro: "Otros",
     deportes: "Deportes",
@@ -65,22 +65,22 @@ function formatCategoryName(category) {
 
 async function testCategories() {
   try {
-    console.log("🔍 Testing categories extraction...");
-    console.log("🔍 DB connection status:", db ? "Connected" : "Not connected");
-    
+    console.log("Testing categories extraction...");
+    console.log("DB connection status:", db ? "Connected" : "Not connected");
+
     // Try to get categories from Firestore first
     if (db) {
       try {
-        console.log("🔍 Attempting to get categories from Firebase...");
-        
+        console.log("Attempting to get categories from Firebase...");
+
         // First, try to get from dedicated categories collection
-        console.log("🔍 Checking categorias collection...");
+        console.log("Checking categorias collection...");
         const categoriesSnapshot = await db
           .collection("categorias")
           .where("activa", "==", true)
           .get();
 
-        console.log("🔍 Categories snapshot empty:", categoriesSnapshot.empty);
+        console.log("Categories snapshot empty:", categoriesSnapshot.empty);
 
         if (!categoriesSnapshot.empty) {
           const categoryData = [];
@@ -102,22 +102,24 @@ async function testCategories() {
         }
 
         // If no categories collection, extract from products
-        console.log("🔍 No categorias collection found, extracting from products...");
+        console.log(
+          "No categorias collection found, extracting from products..."
+        );
         const productsSnapshot = await db.collection("catalogo").get();
-        console.log("🔍 Products found:", productsSnapshot.size);
-        
+        console.log("Products found:", productsSnapshot.size);
+
         const categoriesSet = new Set();
         const categoryData = [];
 
         productsSnapshot.forEach((doc) => {
           const product = doc.data();
-          console.log("🔍 Product categoria:", product.categoria);
+          console.log("Product categoria:", product.categoria);
           if (product.categoria) {
             categoriesSet.add(product.categoria);
           }
         });
 
-        console.log("🔍 Unique categories found:", Array.from(categoriesSet));
+        console.log("Unique categories found:", Array.from(categoriesSet));
 
         // Convert unique categories to the expected format
         categoriesSet.forEach((category) => {
@@ -131,32 +133,32 @@ async function testCategories() {
         });
 
         console.log(
-          `📦 Retrieved ${categoryData.length} categories from products collection:`,
+          `Retrieved ${categoryData.length} categories from products collection:`,
           categoryData
         );
         return categoryData;
       } catch (firestoreError) {
         console.error(
-          "❌ Firestore query failed for categories:",
+          "Firestore query failed for categories:",
           firestoreError.message,
           firestoreError.stack
         );
       }
     } else {
-      console.log("❌ No DB connection available");
+      console.log("No DB connection available");
     }
 
     // Fallback to mock data
-    console.log("📦 Would use mock categories data");
+    console.log("Would use mock categories data");
     return null;
   } catch (error) {
-    console.error("❌ Categories test error:", error.message, error.stack);
+    console.error("Categories test error:", error.message, error.stack);
     return null;
   }
 }
 
 testCategories().then((result) => {
-  console.log("✅ Test completed");
+  console.log("Test completed");
   if (result) {
     console.log("Final result:", JSON.stringify(result, null, 2));
   }

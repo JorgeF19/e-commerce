@@ -98,10 +98,10 @@ function Home() {
       setCouponsLoading(true);
       setCouponsError("");
 
-      console.log("🎟️ Fetching coupons from backend...");
+      console.log("Fetching coupons from backend...");
       const response = await axios.get("http://localhost:5000/api/coupons");
 
-      console.log("🎟️ Coupons received:", response.data);
+      console.log("Coupons received:", response.data);
       setCoupons(response.data);
     } catch (error) {
       setCouponsError("Error al cargar cupones");
@@ -151,11 +151,11 @@ function Home() {
             }
           });
 
-          console.log("✅ Cupones verificados desde Firebase y localStorage");
+          console.log("Cupones verificados desde Firebase y localStorage");
         }
       } catch (firebaseError) {
         console.warn(
-          "⚠️ Error verificando cupones en Firebase (usando localStorage):",
+          "Error verificando cupones en Firebase (usando localStorage):",
           firebaseError.message
         );
         // Firebase error doesn't affect functionality
@@ -163,7 +163,7 @@ function Home() {
 
       setClaimedCoupons(claimed); // Now stores codes, not IDs
     } catch (error) {
-      console.error("❌ Error checking claimed coupons:", error);
+      console.error("Error checking claimed coupons:", error);
 
       // Fallback: just use empty set
       setClaimedCoupons(new Set());
@@ -254,16 +254,16 @@ function Home() {
               firestoreDoc
             );
             console.log(
-              "✅ Cupón también guardado en Firestore con ID:",
+              "Cupón también guardado en Firestore con ID:",
               docRef.id
             );
           } else {
-            console.log("⚠️ Cupón con este código ya existe en Firestore");
+            console.log("Cupón con este código ya existe en Firestore");
           }
         }
       } catch (firebaseError) {
         console.warn(
-          "⚠️ Error de Firebase (cupón guardado localmente):",
+          "Error de Firebase (cupón guardado localmente):",
           firebaseError.message
         );
         // Firebase error doesn't affect the main functionality
@@ -271,9 +271,9 @@ function Home() {
 
       // Show success message
       alert(`¡Cupón ${coupon.code} reclamado exitosamente!`);
-      console.log("✅ Cupón guardado:", couponData);
+      console.log("Cupón guardado:", couponData);
     } catch (error) {
-      console.error("❌ Error claiming coupon:", error);
+      console.error("Error claiming coupon:", error);
       alert("Error al reclamar el cupón. Inténtalo de nuevo.");
     } finally {
       setClaimingCoupon(false);
@@ -481,7 +481,7 @@ function Home() {
         <Row className="mb-4">
           <Col className="d-flex justify-content-between align-items-center">
             <div>
-              <h2 className="text-warning">🎟️ Cupones de Descuento</h2>
+              <h2 className="text-warning">Cupones de Descuento</h2>
               <p className="text-muted">
                 Reclama estos cupones y úsalos en tu próxima compra
                 {claimedCoupons.size > 0 && " (Ya tienes un cupón activo)"}
@@ -509,7 +509,7 @@ function Home() {
         {claimedCoupons.size > 0 && (
           <div className="mt-5">
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h3 className="text-success">🎟️ Tus Cupones Reclamados</h3>
+              <h3 className="text-success">Tus Cupones Reclamados</h3>
               <Button
                 variant="outline-danger"
                 size="sm"
@@ -554,13 +554,13 @@ function Home() {
               <div>
                 <Link to="/carrito">
                   <Button variant="success" size="sm" className="me-2">
-                    💳 Ir al Carrito
+                    Ir al Carrito
                   </Button>
                 </Link>
               </div>
             </Alert>
             <p className="text-muted small">
-              💡 <strong>Tip:</strong> Los cupones reclamados aparecerán
+              <strong>Tip:</strong> Los cupones reclamados aparecerán
               automáticamente en tu carrito de compras donde podrás aplicarlos.
             </p>
           </div>
@@ -796,7 +796,7 @@ function Home() {
                 type="submit"
                 disabled={creatingProduct}
               >
-                {creatingProduct ? "Creando..." : "✅ Crear Producto"}
+                {creatingProduct ? "Creando..." : "Crear Producto"}
               </Button>
             </div>
           </Form>

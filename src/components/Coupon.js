@@ -4,7 +4,7 @@ import { Card, Button, Badge } from "react-bootstrap";
 function Coupon({ coupon, onClaim, isAlreadyClaimed, claimingCoupon }) {
   const handleClaim = () => {
     onClaim(coupon);
-    // Note: localStorage logic is now handled in the parent component (Home.js)
+    // Nota: la lógica de localStorage ahora se maneja en el componente padre (Home.js)
   };
 
   return (

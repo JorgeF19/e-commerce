@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { db } from "../firebase/config"; // Adjust path as needed
+import { db } from "../firebase/config"; // Ajustar ruta según sea necesario
 import {
   collection,
   addDoc,
@@ -59,25 +59,25 @@ function Home() {
     try {
       setLoading(true);
 
-      // Fetch all products first
+      // Obtener todos los productos primero
       const allProductsResponse = await axios.get(
         "http://localhost:5000/api/products"
       );
 
-      // Filter featured products
+      // Filtrar productos destacados
       const featuredProductsFiltered = allProductsResponse.data.filter(
         (product) => product.destacado === true || product.destacado === "true"
       );
       setFeaturedProducts(featuredProductsFiltered);
 
-      // Filter sale products
+      // Filtrar productos en oferta
       const saleProductsFiltered = allProductsResponse.data.filter(
         (product) =>
           product.enDescuento === true || product.enDescuento === "true"
       );
       setSaleProducts(saleProductsFiltered);
 
-      // Filter popular products
+      // Filtrar productos populares
       const popularProductsFiltered = allProductsResponse.data.filter(
         (product) => product.popular === true || product.popular === "true"
       );
@@ -104,7 +104,7 @@ function Home() {
       setCouponsError("Error al cargar cupones");
       console.error("Error fetching coupons:", error);
 
-      // If backend fails, show empty array instead of mock data
+      // Si el backend falla, mostrar array vacío en lugar de datos mock
       setCoupons([]);
     } finally {
       setCouponsLoading(false);
@@ -113,10 +113,10 @@ function Home() {
 
   const checkClaimedCoupons = async () => {
     try {
-      // Get current user ID
-      const userId = localStorage.getItem("userId") || "guest";
+      // Obtener ID del usuario actual
+      const userId = currentUser?.uid;
 
-      // Check localStorage first (reliable source)
+      // Verificar localStorage primero (fuente confiable)
       const localClaimedCoupons = JSON.parse(
         localStorage.getItem("claimedCoupons") || "[]"
       );
@@ -448,11 +448,12 @@ function Home() {
               todos los días.
             </p>
             <div className="d-flex gap-3">
-              <Link to="/store">
+              <Link to="/tienda">
                 <Button variant="light" size="lg">
                   Explorar Tienda
                 </Button>
               </Link>
+
               <Button
                 variant="outline-light"
                 size="lg"
@@ -571,7 +572,7 @@ function Home() {
               <h2 className="text-danger"> Productos en Descuento</h2>
               <p className="text-muted">¡Aprovecha estas ofertas especiales!</p>
             </div>
-            <Link to="/store?onSale=true">
+            <Link to="/tienda?onSale=true">
               <Button variant="outline-danger">Ver Todas las Ofertas</Button>
             </Link>
           </Col>

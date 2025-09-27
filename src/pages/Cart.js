@@ -11,8 +11,8 @@ import {
   Badge,
   ListGroup,
 } from "react-bootstrap";
-// import { useAuth } from "../contexts/AuthContext"; // Firebase version
-import { useAuth } from "../contexts/AuthContextSafe"; // Safe version with fallback
+// import { useAuth } from "../contexts/AuthContext"; // Versión Firebase
+import { useAuth } from "../contexts/AuthContextSafe"; // Versión segura con fallback
 import { useCart } from "../contexts/CartContext";
 import { Link } from "react-router-dom";
 import CouponManager from "../components/CouponManager";
@@ -73,11 +73,11 @@ function Cart() {
 
           if (firebaseCoupons.length > 0) {
             setClaimedCoupons(firebaseCoupons);
-            return; // Exit early if we found Firebase coupons
+            return; // Salir temprano si encontramos cupones de Firebase
           }
         }
 
-        // Fallback to localStorage if no Firebase coupons or no Firebase connection
+        // Respaldo a localStorage si no hay cupones de Firebase o no hay conexión Firebase
         const localCoupons = JSON.parse(
           localStorage.getItem("claimedCoupons") || "[]"
         );

@@ -34,7 +34,7 @@
   }
 }
 
-/* Loading spinner styles */
+/* Estilos del spinner de carga */
 .loading-container {
   display: flex;
   justify-content: center;
@@ -42,7 +42,7 @@
   min-height: 200px;
 }
 
-/* Utility classes */
+/* Clases de utilidad */
 .text-decoration-none {
   text-decoration: none !important;
 }

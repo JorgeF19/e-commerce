@@ -7,7 +7,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Get __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -16,14 +15,11 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Initialize Firebase Admin
 let db;
 try {
-  // Opción 1: Usando archivo de clave de servicio
   if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     const keyPath = path.resolve(
       __dirname,
@@ -33,9 +29,7 @@ try {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-  }
-  // Opción 2: Usando variables de entorno individuales
-  else if (process.env.FIREBASE_PROJECT_ID) {
+  } else if (process.env.FIREBASE_PROJECT_ID) {
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
@@ -52,12 +46,11 @@ try {
   console.warn("Please add your Firebase credentials to .env file");
 }
 
-// Routes
+// Rutas
 app.get("/api/test", (req, res) => {
   res.json({ message: "Backend server is running!" });
 });
 
-// Products routes
 app.get("/api/products", async (req, res) => {
   console.log("🔍 API /products hit");
   try {
@@ -71,7 +64,7 @@ app.get("/api/products", async (req, res) => {
       onSale,
     });
 
-    // Require Firestore database
+    // Requiere base de datos Firestore
     if (!db) {
       return res.status(503).json({
         error: "Database not available. Please configure Firebase credentials.",
@@ -81,7 +74,6 @@ app.get("/api/products", async (req, res) => {
     console.log("🔍 Using Firestore database");
     let productsQuery = db.collection("catalogo");
 
-    // Apply simple filters that work well with Firestore
     if (category) {
       productsQuery = productsQuery.where("categoria", "==", category);
     }
@@ -93,7 +85,6 @@ app.get("/api/products", async (req, res) => {
       products.push({ id: doc.id, ...doc.data() });
     });
 
-    // Apply JavaScript filters for better type handling
     if (onSale === "true") {
       console.log("🔍 Filtering products on sale");
       products = products.filter((product) => {
@@ -128,7 +119,6 @@ app.get("/api/products", async (req, res) => {
       });
     }
 
-    // Apply search filter (Firestore doesn't support full-text search easily)
     if (search) {
       products = products.filter(
         (p) =>
@@ -141,14 +131,13 @@ app.get("/api/products", async (req, res) => {
       `📦 Retrieved ${products.length} products from catalogo collection`
     );
 
-    // Debug: Log all products with their enDescuento status
-    products.forEach((product) => {
-      console.log(
-        `📦 Product: ${product.nombre}, enDescuento: ${
-          product.enDescuento
-        }, type: ${typeof product.enDescuento}`
-      );
-    });
+    // products.forEach((product) => {
+    //   console.log(
+    //     `📦 Product: ${product.nombre}, enDescuento: ${
+    //       product.enDescuento
+    //     }, type: ${typeof product.enDescuento}`
+    //   );
+    // });
 
     return res.json(products);
   } catch (error) {
@@ -178,7 +167,6 @@ app.get("/api/products/:id", async (req, res) => {
   }
 });
 
-// Create new product
 app.post("/api/products", async (req, res) => {
   try {
     console.log("🆕 Creating new product:", req.body);
@@ -202,7 +190,6 @@ app.post("/api/products", async (req, res) => {
       popular = false,
     } = req.body;
 
-    // Validate required fields
     if (!nombre || !categoria || precio == null) {
       return res.status(400).json({
         error:
@@ -210,7 +197,6 @@ app.post("/api/products", async (req, res) => {
       });
     }
 
-    // Create product object
     const productData = {
       categoria,
       descripcion: descripcion || "",
@@ -225,12 +211,10 @@ app.post("/api/products", async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    // Add product to Firestore
     const docRef = await db.collection("catalogo").add(productData);
 
     console.log("✅ Product created with ID:", docRef.id);
 
-    // Return the created product with its ID
     const createdProduct = {
       id: docRef.id,
       ...productData,
@@ -243,7 +227,6 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
-// Categories route
 app.get("/api/categories", async (req, res) => {
   try {
     console.log("🔍 Categories endpoint called");
@@ -257,7 +240,6 @@ app.get("/api/categories", async (req, res) => {
 
     console.log("🔍 Attempting to get categories from Firebase...");
 
-    // First, try to get from dedicated categories collection
     console.log("🔍 Checking categorias collection...");
     const categoriesSnapshot = await db
       .collection("categorias")
@@ -284,7 +266,6 @@ app.get("/api/categories", async (req, res) => {
       return res.json(categoryData);
     }
 
-    // If no categories collection, extract from products
     console.log(
       "🔍 No categorias collection found, extracting from products..."
     );
@@ -304,7 +285,6 @@ app.get("/api/categories", async (req, res) => {
 
     console.log("🔍 Unique categories found:", Array.from(categoriesSet));
 
-    // Convert unique categories to the expected format
     categoriesSet.forEach((category) => {
       categoryData.push({
         id: category,
@@ -326,10 +306,9 @@ app.get("/api/categories", async (req, res) => {
   }
 });
 
-// Helper function to format category names
 function formatCategoryName(category) {
   const categoryMap = {
-    // English categories (legacy)
+    // Categorías en inglés (legacy)
     electronics: "Electrónicos",
     sports: "Deportes",
     home: "Hogar y Jardín",
@@ -343,7 +322,6 @@ function formatCategoryName(category) {
     gaming: "Videojuegos",
     health: "Salud y Bienestar",
 
-    // Spanish categories from Firebase
     electronico: "Electrónicos",
     electronica: "Electrónicos",
     tecnologia: "Tecnología",
@@ -363,22 +341,17 @@ function formatCategoryName(category) {
     salud: "Salud y Bienestar",
   };
 
-  // Check for direct mapping first
   if (categoryMap[category]) {
     return categoryMap[category];
   }
 
-  // Check lowercase mapping
   if (categoryMap[category.toLowerCase()]) {
     return categoryMap[category.toLowerCase()];
   }
 
-  // Return capitalized version as fallback
   return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 }
 
-// CRUD routes for categories management (admin functionality)
-// Create new category
 app.post("/api/categories", async (req, res) => {
   try {
     const { id, nombre, descripcion, icono } = req.body;
@@ -408,7 +381,6 @@ app.post("/api/categories", async (req, res) => {
   }
 });
 
-// Update category
 app.put("/api/categories/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -435,7 +407,7 @@ app.put("/api/categories/:id", async (req, res) => {
   }
 });
 
-// Delete category (soft delete - mark as inactive)
+// Eliminar categoría (soft delete - marcar como inactiva)
 app.delete("/api/categories/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -456,7 +428,7 @@ app.delete("/api/categories/:id", async (req, res) => {
   }
 });
 
-// Discount cupones/bonuses endpoint
+// Endpoint de cupones de descuento
 app.get("/api/cupones", async (req, res) => {
   try {
     if (!db) {
@@ -472,12 +444,12 @@ app.get("/api/cupones", async (req, res) => {
       const couponData = doc.data();
       coupons.push({
         id: doc.id,
-        code: couponData.codigo, // Firebase field: codigo
-        title: couponData.nombre || `Descuento ${couponData.descuento}% `, // Dynamic title based on discount
+        code: couponData.codigo, // Campo Firebase: codigo
+        title: couponData.nombre || `Descuento ${couponData.descuento}% `, // Título dinámico basado en descuento
         description: `Obtén ${couponData.descuento}% de descuento en tu compra`,
-        discount: couponData.descuento, // Firebase field: descuento
-        type: "percentage", // Default type
-        validUntil: couponData.fechaVencimiento, // Firebase field: fechaVencimiento
+        discount: couponData.descuento, // Campo Firebase: descuento
+        type: "percentage", // Tipo por defecto
+        validUntil: couponData.fechaVencimiento, // Campo Firebase: fechaVencimiento
         active: couponData.active !== false,
         nombre: couponData.nombre, // Keep original nombre field
         ...couponData,
@@ -490,7 +462,7 @@ app.get("/api/cupones", async (req, res) => {
   }
 });
 
-// Alias for English endpoint - redirect to Spanish endpoint
+// Alias para endpoint en inglés - redirigir a endpoint en español
 app.get("/api/coupons", async (req, res) => {
   try {
     if (!db) {
@@ -506,11 +478,11 @@ app.get("/api/coupons", async (req, res) => {
       const couponData = doc.data();
       coupons.push({
         id: doc.id,
-        code: couponData.codigo || couponData.code, // Firebase field: codigo
-        title: `Descuento ${couponData.descuento}% OFF`, // Dynamic title based on discount
+        code: couponData.codigo || couponData.code, // Campo Firebase: codigo
+        title: `Descuento ${couponData.descuento}% OFF`, // Título dinámico basado en descuento
         description: `Obtén ${couponData.descuento}% de descuento en tu compra`,
-        discount: couponData.descuento, // Firebase field: descuento
-        type: "percentage", // Default type
+        discount: couponData.descuento, // Campo Firebase: descuento
+        type: "percentage", // Tipo por defecto
         minPurchase: couponData.compraMinima || 0,
         maxDiscount: couponData.descuentoMaximo,
         validUntil: couponData.fechaVencimiento, // Firebase field: fechaVencimiento
@@ -528,7 +500,7 @@ app.get("/api/coupons", async (req, res) => {
   }
 });
 
-// Validate discount coupon
+// Validar cupón de descuento
 app.post("/api/validate-coupon", async (req, res) => {
   try {
     const { code, cartTotal } = req.body;
@@ -540,7 +512,7 @@ app.post("/api/validate-coupon", async (req, res) => {
       });
     }
 
-    // First try to find coupon by 'codigo' field
+    // Primero intentar encontrar cupón por campo 'codigo'
     const couponsSnapshot = await db
       .collection("cupones")
       .where("codigo", "==", code.toUpperCase())
@@ -549,7 +521,7 @@ app.post("/api/validate-coupon", async (req, res) => {
 
     let couponsSnapshot2;
     if (couponsSnapshot.empty) {
-      // Try searching by nombre field as fallback
+      // Intentar buscar por campo nombre como respaldo
       couponsSnapshot2 = await db
         .collection("cupones")
         .where("nombre", "==", code.toLowerCase())
@@ -566,14 +538,14 @@ app.post("/api/validate-coupon", async (req, res) => {
       : couponsSnapshot.docs[0];
     const coupon = couponDoc.data();
 
-    // Check if coupon is active and not used
+    // Verificar si el cupón está activo y no usado
     if (coupon.active === false || coupon.used === true) {
       return res
         .status(400)
         .json({ error: "Cupón expirado o ya usado", valid: false });
     }
 
-    // Check if coupon has expired (fechaVencimiento is a timestamp)
+    // Verificar si el cupón ha expirado (fechaVencimiento es un timestamp)
     if (coupon.fechaVencimiento) {
       const expirationDate = coupon.fechaVencimiento.toDate
         ? coupon.fechaVencimiento.toDate()
@@ -587,7 +559,7 @@ app.post("/api/validate-coupon", async (req, res) => {
       }
     }
 
-    // Check minimum purchase requirement
+    // Verificar requisito de compra mínima
     const minPurchase = coupon.compraMinima || 0;
     if (cartTotal < minPurchase) {
       return res.status(400).json({
@@ -596,10 +568,10 @@ app.post("/api/validate-coupon", async (req, res) => {
       });
     }
 
-    // Calculate discount amount
+    // Calcular monto del descuento
     let discountAmount = 0;
-    const discount = coupon.descuento || 0; // Use 'descuento' field from Firebase
-    const type = "percentage"; // Default to percentage since your data shows numeric discount
+    const discount = coupon.descuento || 0; // Usar campo 'descuento' de Firebase
+    const type = "percentage"; // Por defecto a porcentaje ya que los datos muestran descuento numérico
 
     if (type === "percentage") {
       const maxDiscount = coupon.descuentoMaximo || Infinity;
@@ -625,7 +597,7 @@ app.post("/api/validate-coupon", async (req, res) => {
   }
 });
 
-// Cart routes (these would typically use user authentication)
+// Rutas del carrito (normalmente usarían autenticación de usuario)
 app.get("/api/cart/:userId", async (req, res) => {
   try {
     if (!db) {
@@ -660,7 +632,7 @@ app.post("/api/cart/:userId/add", async (req, res) => {
     const { productId, quantity = 1 } = req.body;
     const userId = req.params.userId;
 
-    // Get or create cart
+    // Obtener o crear carrito
     const cartRef = db.collection("carritos").doc(userId);
     const cartDoc = await cartRef.get();
 
@@ -671,7 +643,7 @@ app.post("/api/cart/:userId/add", async (req, res) => {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     } else {
-      // Update existing cart logic would go here
+      // La lógica para actualizar carrito existente iría aquí
       const cartData = cartDoc.data();
       const existingItemIndex = cartData.items.findIndex(
         (item) => item.productId === productId
@@ -704,7 +676,7 @@ app.put("/api/cart/:userId/update/:itemId", async (req, res) => {
     }
 
     const { quantity } = req.body;
-    // Cart update logic using Firestore would go here
+    // Lógica de actualización del carrito usando Firestore iría aquí
     res.json({
       message: "Cart item updated",
       itemId: req.params.itemId,
@@ -723,14 +695,14 @@ app.delete("/api/cart/:userId/remove/:itemId", async (req, res) => {
       });
     }
 
-    // Cart item removal logic using Firestore would go here
+    // Lógica de eliminación de artículo del carrito usando Firestore iría aquí
     res.json({ message: "Cart item removed", itemId: req.params.itemId });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Initialize Firestore with sample data
+// Inicializar Firestore con datos de ejemplo
 async function initializeFirestoreData() {
   if (!db) {
     console.log("📋 Firestore not available, skipping data initialization");
@@ -738,7 +710,7 @@ async function initializeFirestoreData() {
   }
 
   try {
-    // Check if catalogo collection already has data
+    // Verificar si la colección catalogo ya tiene datos
     const catalogoSnapshot = await db.collection("catalogo").limit(1).get();
 
     if (!catalogoSnapshot.empty) {
@@ -750,7 +722,7 @@ async function initializeFirestoreData() {
 
     console.log("🔄 Initializing Firestore with sample data...");
 
-    // Sample products data with Spanish field names
+    // Datos de productos de ejemplo con nombres de campos en español
     const sampleProducts = [
       {
         nombre: "Smartphone Pro",
@@ -832,7 +804,7 @@ async function initializeFirestoreData() {
       },
     ];
 
-    // Add products to Firestore catalogo collection
+    // Agregar productos a la colección catalogo de Firestore
     const batch = db.batch();
     sampleProducts.forEach((product, index) => {
       const productRef = db.collection("catalogo").doc(`product_${index + 1}`);
@@ -848,14 +820,14 @@ async function initializeFirestoreData() {
       "✅ Sample products added to catalogo collection successfully!"
     );
 
-    // Initialize categories collection (optional - for better organization)
+    // Inicializar colección de categorías (opcional - para mejor organización)
     await initializeCategoriesCollection();
   } catch (error) {
     console.error("❌ Error initializing Firestore data:", error);
   }
 }
 
-// Initialize categories collection with predefined categories
+// Inicializar colección de categorías con categorías predefinidas
 async function initializeCategoriesCollection() {
   try {
     const categoriesSnapshot = await db.collection("categorias").limit(1).get();
@@ -916,7 +888,7 @@ async function initializeCategoriesCollection() {
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
 
-  // Initialize Firestore data if needed
+  // Inicializar datos de Firestore si es necesario
   if (db) {
     await initializeFirestoreData();
   }

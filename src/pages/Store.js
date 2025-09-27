@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Container,
   Row,
@@ -13,6 +14,8 @@ import axios from "axios";
 import ProductList from "../components/ProductList";
 
 function Store() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +46,19 @@ function Store() {
         params.append("search", searchTerm);
       }
 
+      // Agregar parámetros de la URL para filtros especiales
+      if (searchParams.get("onSale")) {
+        params.append("onSale", "true");
+      }
+
+      if (searchParams.get("featured")) {
+        params.append("featured", "true");
+      }
+
+      if (searchParams.get("popular")) {
+        params.append("popular", "true");
+      }
+
       if (params.toString()) {
         url += "?" + params.toString();
       }
@@ -56,7 +72,7 @@ function Store() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, searchTerm]);
+  }, [selectedCategory, searchTerm, searchParams]);
 
   useEffect(() => {
     fetchCategories();
@@ -75,13 +91,36 @@ function Store() {
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("");
+    // Limpiar también los parámetros de la URL
+    navigate("/tienda");
+  };
+
+  // Función para obtener el título dinámico basado en los filtros
+  const getPageTitle = () => {
+    if (searchParams.get("onSale")) {
+      return "🔥 Productos en Oferta";
+    }
+    if (searchParams.get("featured")) {
+      return "⭐ Productos Destacados";
+    }
+    if (searchParams.get("popular")) {
+      return "👑 Productos Populares";
+    }
+    if (selectedCategory && categories.length > 0) {
+      const category = categories.find((c) => c.id === selectedCategory);
+      return `📦 ${category?.name || "Categoría"}`;
+    }
+    if (searchTerm) {
+      return `🔍 Resultados para: "${searchTerm}"`;
+    }
+    return "Tienda";
   };
 
   return (
     <Container>
       <Row className="mb-4">
         <Col>
-          <h2>Tienda</h2>
+          <h2>{getPageTitle()}</h2>
           <hr />
         </Col>
       </Row>
@@ -119,7 +158,11 @@ function Store() {
       </Row>
 
       {/* Active Filters */}
-      {(selectedCategory || searchTerm) && (
+      {(selectedCategory ||
+        searchTerm ||
+        searchParams.get("onSale") ||
+        searchParams.get("featured") ||
+        searchParams.get("popular")) && (
         <Row className="mb-3">
           <Col>
             <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -132,6 +175,15 @@ function Store() {
               )}
               {searchTerm && (
                 <Badge bg="primary">Búsqueda: "{searchTerm}"</Badge>
+              )}
+              {searchParams.get("onSale") && (
+                <Badge bg="danger">En Oferta</Badge>
+              )}
+              {searchParams.get("featured") && (
+                <Badge bg="primary">Destacados</Badge>
+              )}
+              {searchParams.get("popular") && (
+                <Badge bg="success">Populares</Badge>
               )}
               <Button variant="link" size="sm" onClick={clearFilters}>
                 Limpiar filtros
